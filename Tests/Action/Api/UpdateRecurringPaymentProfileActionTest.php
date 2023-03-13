@@ -1,68 +1,80 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Tests\Action\Api;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Tests\Action\Api;
-
-use ArrayAccess;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
-use Payum\Core\Exception\LogicException;
-use Payum\Core\Exception\RequestNotSupportedException;
-use Payum\Paypal\ExpressCheckout\Nvp\Action\Api\UpdateRecurringPaymentProfileAction;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\UpdateRecurringPaymentProfile;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
-use ReflectionClass;
-use stdClass;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Action\Api\UpdateRecurringPaymentProfileAction;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\UpdateRecurringPaymentProfile;
 
-class UpdateRecurringPaymentProfileActionTest extends TestCase
+class UpdateRecurringPaymentProfileActionTest extends \PHPUnit\Framework\TestCase
 {
-    public function testShouldImplementActionInterface()
+    /**
+     * @test
+     */
+    public function shouldImplementActionInterface()
     {
-        $rc = new ReflectionClass(UpdateRecurringPaymentProfileAction::class);
+        $rc = new \ReflectionClass(UpdateRecurringPaymentProfileAction::class);
 
         $this->assertTrue($rc->implementsInterface(ActionInterface::class));
     }
 
-    public function testShouldImplementApoAwareInterface()
+    /**
+     * @test
+     */
+    public function shouldImplementApoAwareInterface()
     {
-        $rc = new ReflectionClass(UpdateRecurringPaymentProfileAction::class);
+        $rc = new \ReflectionClass(UpdateRecurringPaymentProfileAction::class);
 
         $this->assertTrue($rc->implementsInterface(ApiAwareInterface::class));
     }
 
-    public function testShouldUpdateRecurringPaymentProfileRequestAndArrayAccessAsModel()
+    /**
+     * @test
+     */
+    public function shouldUpdateRecurringPaymentProfileRequestAndArrayAccessAsModel()
     {
         $action = new UpdateRecurringPaymentProfileAction();
 
-        $this->assertTrue($action->supports(new UpdateRecurringPaymentProfile($this->createMock(ArrayAccess::class))));
+        $this->assertTrue($action->supports(new UpdateRecurringPaymentProfile($this->createMock('ArrayAccess'))));
     }
 
-    public function testShouldNotSupportAnythingNotUpdateRecurringPaymentProfileRequest()
+    /**
+     * @test
+     */
+    public function shouldNotSupportAnythingNotUpdateRecurringPaymentProfileRequest()
     {
         $action = new UpdateRecurringPaymentProfileAction();
 
-        $this->assertFalse($action->supports(new stdClass()));
+        $this->assertFalse($action->supports(new \stdClass()));
     }
 
-    public function testThrowIfNotSupportedRequestGivenAsArgumentForExecute()
+    /**
+     * @test
+     */
+    public function throwIfNotSupportedRequestGivenAsArgumentForExecute()
     {
-        $this->expectException(RequestNotSupportedException::class);
+        $this->expectException(\Payum\Core\Exception\RequestNotSupportedException::class);
         $action = new UpdateRecurringPaymentProfileAction();
 
-        $action->execute(new stdClass());
+        $action->execute(new \stdClass());
     }
 
-    public function testThrowIfProfileIdNotSetInModel()
+    /**
+     * @test
+     */
+    public function throwIfProfileIdNotSetInModel()
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(\Payum\Core\Exception\LogicException::class);
         $this->expectExceptionMessage('The PROFILEID fields are required.');
         $action = new UpdateRecurringPaymentProfileAction();
 
-        $action->execute(new UpdateRecurringPaymentProfile([]));
+        $action->execute(new UpdateRecurringPaymentProfile(array()));
     }
 
-    public function testShouldCallApiUpdateRecurringPaymentsProfileMethodWithExpectedRequiredArguments()
+    /**
+     * @test
+     */
+    public function shouldCallApiUpdateRecurringPaymentsProfileMethodWithExpectedRequiredArguments()
     {
         $testCase = $this;
 
@@ -70,60 +82,63 @@ class UpdateRecurringPaymentProfileActionTest extends TestCase
         $apiMock
             ->expects($this->once())
             ->method('updateRecurringPaymentsProfile')
-            ->willReturnCallback(function (array $fields) use ($testCase) {
+            ->will($this->returnCallback(function (array $fields) use ($testCase) {
                 $testCase->assertArrayHasKey('PROFILEID', $fields);
-                $testCase->assertSame('theProfileId', $fields['PROFILEID']);
+                $testCase->assertEquals('theProfileId', $fields['PROFILEID']);
 
-                return [];
-            })
+                return array();
+            }))
         ;
 
         $action = new UpdateRecurringPaymentProfileAction();
         $action->setApi($apiMock);
 
-        $request = new UpdateRecurringPaymentProfile([
+        $request = new UpdateRecurringPaymentProfile(array(
             'PROFILEID' => 'theProfileId',
-        ]);
+        ));
 
         $action->execute($request);
     }
 
-    public function testShouldCallApiUpdateRecurringPaymentsProfileMethodAndUpdateModelFromResponseOnSuccess()
+    /**
+     * @test
+     */
+    public function shouldCallApiUpdateRecurringPaymentsProfileMethodAndUpdateModelFromResponseOnSuccess()
     {
         $apiMock = $this->createApiMock();
         $apiMock
             ->expects($this->once())
             ->method('updateRecurringPaymentsProfile')
-            ->willReturnCallback(function () {
-                return [
+            ->will($this->returnCallback(function () {
+                return array(
                     'PROFILEID' => 'theId',
                     'PROFILESTATUS' => 'theStatus',
-                ];
-            })
+                );
+            }))
         ;
 
         $action = new UpdateRecurringPaymentProfileAction();
         $action->setApi($apiMock);
 
-        $request = new UpdateRecurringPaymentProfile([
+        $request = new UpdateRecurringPaymentProfile(array(
             'PROFILEID' => 'theProfileId',
-        ]);
+        ));
 
         $action->execute($request);
 
         $model = $request->getModel();
         $this->assertArrayHasKey('PROFILEID', $model);
-        $this->assertSame('theId', $model['PROFILEID']);
+        $this->assertEquals('theId', $model['PROFILEID']);
 
         $this->assertArrayHasKey('PROFILESTATUS', $model);
-        $this->assertSame('theStatus', $model['PROFILESTATUS']);
+        $this->assertEquals('theStatus', $model['PROFILESTATUS']);
     }
 
     /**
-     * @return MockObject|Api
+     * @return \PHPUnit_Framework_MockObject_MockObject|\Workup\Payum\Paypal\ExpressCheckout\Nvp\Api
      */
     protected function createApiMock()
     {
-        return $this->createMock(Api::class, [], [], '', false);
+        return $this->createMock('Workup\Payum\Paypal\ExpressCheckout\Nvp\Api', array(), array(), '', false);
     }
 }

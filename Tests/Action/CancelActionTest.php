@@ -1,38 +1,41 @@
 <?php
-
-namespace Payum\Paypal\ExpressCheckout\Nvp\Tests\Action;
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Tests\Action;
 
 use Payum\Core\Action\ActionInterface;
-use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\GatewayAwareInterface;
 use Payum\Core\GatewayInterface;
 use Payum\Core\Request\Cancel;
 use Payum\Core\Request\Sync;
-use Payum\Paypal\ExpressCheckout\Nvp\Action\CancelAction;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\DoVoid;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
-use ReflectionClass;
-use stdClass;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Action\CancelAction;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Api;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\DoVoid;
 
-class CancelActionTest extends TestCase
+class CancelActionTest extends \PHPUnit\Framework\TestCase
 {
-    public function testShouldImplementActionInterface()
+    /**
+     * @test
+     */
+    public function shouldImplementActionInterface()
     {
-        $rc = new ReflectionClass(CancelAction::class);
+        $rc = new \ReflectionClass(CancelAction::class);
 
         $this->assertTrue($rc->isSubclassOf(ActionInterface::class));
     }
 
-    public function testShouldImplementGatewayAwareInterface()
+    /**
+     * @test
+     */
+    public function shouldImplementGatewayAwareInterface()
     {
-        $rc = new ReflectionClass(CancelAction::class);
+        $rc = new \ReflectionClass(CancelAction::class);
 
         $this->assertTrue($rc->isSubclassOf(GatewayAwareInterface::class));
     }
 
-    public function testShouldSupportEmptyModel()
+    /**
+     * @test
+     */
+    public function shouldSupportEmptyModel()
     {
         $action = new CancelAction();
 
@@ -41,70 +44,91 @@ class CancelActionTest extends TestCase
         $this->assertTrue($action->supports($request));
     }
 
-    public function testShouldSupportCancelRequestWithArrayAsModelWhichHasPendingReasonAsAuthorized()
+    /**
+     * @test
+     */
+    public function shouldSupportCancelRequestWithArrayAsModelWhichHasPendingReasonAsAuthorized()
     {
         $action = new CancelAction();
 
-        $payment = [
-            'PAYMENTINFO_0_PENDINGREASON' => Api::PENDINGREASON_AUTHORIZATION,
-        ];
+        $payment = array(
+           'PAYMENTINFO_0_PENDINGREASON' => Api::PENDINGREASON_AUTHORIZATION,
+        );
 
         $request = new Cancel($payment);
 
         $this->assertTrue($action->supports($request));
     }
 
-    public function testShouldSupportCancelRequestWithArrayAsModelWhichHasPendingReasonAsOtherThanAuthorized()
+    /**
+     * @test
+     */
+    public function shouldSupportCancelRequestWithArrayAsModelWhichHasPendingReasonAsOtherThanAuthorized()
     {
         $action = new CancelAction();
 
-        $payment = [
-            'PAYMENTINFO_0_PENDINGREASON' => 'Foo',
-        ];
+        $payment = array(
+           'PAYMENTINFO_0_PENDINGREASON' => 'Foo',
+        );
 
         $request = new Cancel($payment);
 
         $this->assertTrue($action->supports($request));
     }
 
-    public function testShouldNotSupportModelWithBillingPeriod()
+    /**
+     * @test
+     */
+    public function shouldNotSupportModelWithBillingPeriod()
     {
         $action = new CancelAction();
 
-        $payment = [
-            'BILLINGPERIOD' => 'Month',
-        ];
+        $payment = array(
+           'BILLINGPERIOD' => 'Month',
+        );
 
         $request = new Cancel($payment);
 
         $this->assertFalse($action->supports($request));
     }
 
-    public function testShouldNotSupportCancelRequestWithNoArrayAccessAsModel()
+    /**
+     * @test
+     */
+    public function shouldNotSupportCancelRequestWithNoArrayAccessAsModel()
     {
         $action = new CancelAction();
 
-        $request = new Cancel(new stdClass());
+        $request = new Cancel(new \stdClass());
 
         $this->assertFalse($action->supports($request));
     }
 
-    public function testShouldNotSupportAnythingNotCancelRequest()
+    /**
+     * @test
+     */
+    public function shouldNotSupportAnythingNotCancelRequest()
     {
         $action = new CancelAction();
 
-        $this->assertFalse($action->supports(new stdClass()));
+        $this->assertFalse($action->supports(new \stdClass()));
     }
 
-    public function testThrowIfNotSupportedRequestGivenAsArgumentForExecute()
+    /**
+     * @test
+     */
+    public function throwIfNotSupportedRequestGivenAsArgumentForExecute()
     {
-        $this->expectException(RequestNotSupportedException::class);
+        $this->expectException(\Payum\Core\Exception\RequestNotSupportedException::class);
         $action = new CancelAction();
 
-        $action->execute(new stdClass());
+        $action->execute(new \stdClass());
     }
 
-    public function testShouldNotExecuteDoVoidIfTransactionIdNotSet()
+    /**
+     * @test
+     */
+    public function shouldNotExecuteDoVoidIfTransactionIdNotSet()
     {
         $gatewayMock = $this->createGatewayMock();
         $gatewayMock
@@ -120,30 +144,33 @@ class CancelActionTest extends TestCase
         $action->execute($request);
     }
 
-    public function testShouldExecuteDoVoidIfTransactionIdSet()
+    /**
+     * @test
+     */
+    public function shouldExecuteDoVoidIfTransactionIdSet()
     {
         $gatewayMock = $this->createGatewayMock();
         $gatewayMock
             ->expects($this->exactly(2))
             ->method('execute')
             ->withConsecutive(
-                [$this->isInstanceOf(DoVoid::class)],
-                [$this->isInstanceOf(Sync::class)]
+                array($this->isInstanceOf(DoVoid::class)),
+                array($this->isInstanceOf(Sync::class))
             )
         ;
 
         $action = new CancelAction();
         $action->setGateway($gatewayMock);
 
-        $request = new Cancel([
+        $request = new Cancel(array(
             'TRANSACTIONID' => 'theId',
-        ]);
+        ));
 
         $action->execute($request);
     }
 
     /**
-     * @return MockObject|GatewayInterface
+     * @return \PHPUnit_Framework_MockObject_MockObject|\Payum\Core\GatewayInterface
      */
     protected function createGatewayMock()
     {

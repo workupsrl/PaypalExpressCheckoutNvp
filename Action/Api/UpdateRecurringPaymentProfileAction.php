@@ -1,15 +1,13 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Action\Api;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Action\Api;
-
-use ArrayAccess;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
 use Payum\Core\ApiAwareTrait;
 use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\UpdateRecurringPaymentProfile;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Api;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\UpdateRecurringPaymentProfile;
 
 class UpdateRecurringPaymentProfileAction implements ActionInterface, ApiAwareInterface
 {
@@ -20,24 +18,31 @@ class UpdateRecurringPaymentProfileAction implements ActionInterface, ApiAwareIn
         $this->apiClass = Api::class;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function execute($request)
     {
-        /** @var UpdateRecurringPaymentProfile $request */
+        /** @var $request UpdateRecurringPaymentProfile */
         RequestNotSupportedException::assertSupports($this, $request);
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
 
-        $model->validateNotEmpty(['PROFILEID']);
+        $model->validateNotEmpty(array('PROFILEID'));
 
         $model->replace(
             $this->api->updateRecurringPaymentsProfile((array) $model)
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function supports($request)
     {
-        return $request instanceof UpdateRecurringPaymentProfile &&
-            $request->getModel() instanceof ArrayAccess
+        return
+            $request instanceof UpdateRecurringPaymentProfile &&
+            $request->getModel() instanceof \ArrayAccess
         ;
     }
 }

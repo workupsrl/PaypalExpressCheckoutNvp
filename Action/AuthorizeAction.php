@@ -1,19 +1,20 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Action;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Action;
-
-use ArrayAccess;
 use Payum\Core\Bridge\Spl\ArrayObject;
-use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\Request\Authorize;
 use Payum\Core\Request\Capture;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
+use Payum\Core\Exception\RequestNotSupportedException;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Api;
 
 class AuthorizeAction extends PurchaseAction
 {
+    /**
+     * {@inheritDoc}
+     */
     public function execute($request)
     {
-        /** @var Capture $request */
+        /** @var $request Capture */
         RequestNotSupportedException::assertSupports($this, $request);
 
         $details = ArrayObject::ensureArrayObject($request->getModel());
@@ -23,10 +24,14 @@ class AuthorizeAction extends PurchaseAction
         parent::execute($request);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function supports($request)
     {
-        return $request instanceof Authorize &&
-            $request->getModel() instanceof ArrayAccess
+        return
+            $request instanceof Authorize &&
+            $request->getModel() instanceof \ArrayAccess
         ;
     }
 }

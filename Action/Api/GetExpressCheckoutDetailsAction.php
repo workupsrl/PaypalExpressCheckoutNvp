@@ -1,16 +1,14 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Action\Api;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Action\Api;
-
-use ArrayAccess;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
 use Payum\Core\ApiAwareTrait;
 use Payum\Core\Bridge\Spl\ArrayObject;
-use Payum\Core\Exception\LogicException;
 use Payum\Core\Exception\RequestNotSupportedException;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\GetExpressCheckoutDetails;
+use Payum\Core\Exception\LogicException;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Api;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\GetExpressCheckoutDetails;
 
 class GetExpressCheckoutDetailsAction implements ActionInterface, ApiAwareInterface
 {
@@ -21,9 +19,12 @@ class GetExpressCheckoutDetailsAction implements ActionInterface, ApiAwareInterf
         $this->apiClass = Api::class;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function execute($request)
     {
-        /** @var GetExpressCheckoutDetails $request */
+        /** @var $request GetExpressCheckoutDetails */
         RequestNotSupportedException::assertSupports($this, $request);
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
@@ -32,16 +33,18 @@ class GetExpressCheckoutDetailsAction implements ActionInterface, ApiAwareInterf
         }
 
         $model->replace(
-            $this->api->getExpressCheckoutDetails([
-                'TOKEN' => $model['TOKEN'],
-            ])
+            $this->api->getExpressCheckoutDetails(array('TOKEN' => $model['TOKEN']))
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function supports($request)
     {
-        return $request instanceof GetExpressCheckoutDetails &&
-            $request->getModel() instanceof ArrayAccess
+        return
+            $request instanceof GetExpressCheckoutDetails &&
+            $request->getModel() instanceof \ArrayAccess
         ;
     }
 }

@@ -1,8 +1,6 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Tests\Action;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Tests\Action;
-
-use ArrayObject;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\GatewayAwareInterface;
 use Payum\Core\GatewayInterface;
@@ -12,14 +10,12 @@ use Payum\Core\Request\GetHttpRequest;
 use Payum\Core\Request\Sync;
 use Payum\Core\Security\GenericTokenFactoryInterface;
 use Payum\Core\Tests\GenericActionTest;
-use Payum\Paypal\ExpressCheckout\Nvp\Action\CaptureAction;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\AuthorizeToken;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\ConfirmOrder;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\DoExpressCheckoutPayment;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\SetExpressCheckout;
-use PHPUnit\Framework\MockObject\MockObject;
-use ReflectionClass;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Action\CaptureAction;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Api;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\AuthorizeToken;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\ConfirmOrder;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\DoExpressCheckoutPayment;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\SetExpressCheckout;
 
 class CaptureActionTest extends GenericActionTest
 {
@@ -27,21 +23,30 @@ class CaptureActionTest extends GenericActionTest
 
     protected $actionClass = CaptureAction::class;
 
-    public function testShouldImplementActionInterface()
+    /**
+     * @test
+     */
+    public function shouldImplementActionInterface()
     {
-        $rc = new ReflectionClass(CaptureAction::class);
+        $rc = new \ReflectionClass(CaptureAction::class);
 
         $this->assertTrue($rc->implementsInterface(ActionInterface::class));
     }
 
-    public function testShouldImplementGatewayAwareInterface()
+    /**
+     * @test
+     */
+    public function shouldImplementGatewayAwareInterface()
     {
-        $rc = new ReflectionClass(CaptureAction::class);
+        $rc = new \ReflectionClass(CaptureAction::class);
 
         $this->assertTrue($rc->implementsInterface(GatewayAwareInterface::class));
     }
 
-    public function testShouldSetZeroGatewayActionAsSell()
+    /**
+     * @test
+     */
+    public function shouldSetZeroGatewayActionAsSell()
     {
         $action = new CaptureAction();
         $action->setGateway($this->createGatewayMock());
@@ -50,10 +55,13 @@ class CaptureActionTest extends GenericActionTest
 
         $model = $request->getModel();
         $this->assertArrayHasKey('PAYMENTREQUEST_0_PAYMENTACTION', $model);
-        $this->assertSame(Api::PAYMENTACTION_SALE, $model['PAYMENTREQUEST_0_PAYMENTACTION']);
+        $this->assertEquals(Api::PAYMENTACTION_SALE, $model['PAYMENTREQUEST_0_PAYMENTACTION']);
     }
 
-    public function testShouldForcePaymentActionSale()
+    /**
+     * @test
+     */
+    public function shouldForcePaymentActionSale()
     {
         $action = new CaptureAction();
         $action->setGateway($this->createGatewayMock());
@@ -64,21 +72,34 @@ class CaptureActionTest extends GenericActionTest
 
         $model = $request->getModel();
         $this->assertArrayHasKey('PAYMENTREQUEST_0_PAYMENTACTION', $model);
-        $this->assertSame(Api::PAYMENTACTION_SALE, $model['PAYMENTREQUEST_0_PAYMENTACTION']);
+        $this->assertEquals(Api::PAYMENTACTION_SALE, $model['PAYMENTREQUEST_0_PAYMENTACTION']);
     }
 
-    public function testShouldRequestSetExpressCheckoutActionAndAuthorizeActionIfTokenNotSetInModel()
+    /**
+     * @test
+     */
+    public function shouldRequestSetExpressCheckoutActionAndAuthorizeActionIfTokenNotSetInModel()
     {
         $gatewayMock = $this->createGatewayMock();
         $gatewayMock
-            ->expects($this->atLeast(4))
+            ->expects($this->at(0))
             ->method('execute')
-            ->withConsecutive(
-                [$this->isInstanceOf(GetHttpRequest::class)],
-                [$this->isInstanceOf(SetExpressCheckout::class)],
-                [$this->isInstanceOf(Sync::class)],
-                [$this->isInstanceOf(AuthorizeToken::class)]
-            )
+            ->with($this->isInstanceOf(GetHttpRequest::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(1))
+            ->method('execute')
+            ->with($this->isInstanceOf(SetExpressCheckout::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(2))
+            ->method('execute')
+            ->with($this->isInstanceOf(Sync::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(3))
+            ->method('execute')
+            ->with($this->isInstanceOf(AuthorizeToken::class))
         ;
 
         $action = new CaptureAction();
@@ -87,17 +108,26 @@ class CaptureActionTest extends GenericActionTest
         $action->execute(new Capture([]));
     }
 
-    public function testShouldRequestAuthorizeActionIfPayerIdNotSetInModel()
+    /**
+     * @test
+     */
+    public function shouldRequestAuthorizeActionIfPayerIdNotSetInModel()
     {
         $gatewayMock = $this->createGatewayMock();
         $gatewayMock
-            ->expects($this->atLeast(3))
+            ->expects($this->at(0))
             ->method('execute')
-            ->withConsecutive(
-                [$this->isInstanceOf(GetHttpRequest::class)],
-                [$this->isInstanceOf(Sync::class)],
-                [$this->isInstanceOf(AuthorizeToken::class)]
-            )
+            ->with($this->isInstanceOf(GetHttpRequest::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(1))
+            ->method('execute')
+            ->with($this->isInstanceOf(Sync::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(2))
+            ->method('execute')
+            ->with($this->isInstanceOf(AuthorizeToken::class))
         ;
 
         $action = new CaptureAction();
@@ -109,16 +139,21 @@ class CaptureActionTest extends GenericActionTest
         ]));
     }
 
-    public function testShouldNotRequestAuthorizeActionIfPayerIdSetInModel()
+    /**
+     * @test
+     */
+    public function shouldNotRequestAuthorizeActionIfPayerIdSetInModel()
     {
         $gatewayMock = $this->createGatewayMock();
         $gatewayMock
-            ->expects($this->atLeast(2))
+            ->expects($this->at(0))
             ->method('execute')
-            ->withConsecutive(
-                [$this->isInstanceOf(GetHttpRequest::class)],
-                [$this->isInstanceOf(Sync::class)]
-            )
+            ->with($this->isInstanceOf(GetHttpRequest::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(1))
+            ->method('execute')
+            ->with($this->isInstanceOf(Sync::class))
         ;
 
         $action = new CaptureAction();
@@ -130,24 +165,26 @@ class CaptureActionTest extends GenericActionTest
         ]));
     }
 
-    public function testShouldNotExecuteAnythingIfSetExpressCheckoutActionFails()
+    /**
+     * @test
+     */
+    public function shouldNotExecuteAnythingIfSetExpressCheckoutActionFails()
     {
         $gatewayMock = $this->createGatewayMock();
         $gatewayMock
-            ->expects($this->atLeast(2))
+            ->expects($this->at(0))
             ->method('execute')
-            ->withConsecutive(
-                [$this->isInstanceOf(GetHttpRequest::class)],
-                [$this->isInstanceOf(SetExpressCheckout::class)]
-            )
-            ->willReturnOnConsecutiveCalls(
-                null,
-                $this->returnCallback(function (SetExpressCheckout $request) {
-                    $model = $request->getModel();
+            ->with($this->isInstanceOf(GetHttpRequest::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(1))
+            ->method('execute')
+            ->with($this->isInstanceOf(SetExpressCheckout::class))
+            ->will($this->returnCallback(function (SetExpressCheckout $request) {
+                $model = $request->getModel();
 
-                    $model['L_ERRORCODE0'] = 'aCode';
-                })
-            )
+                $model['L_ERRORCODE0'] = 'aCode';
+            }))
         ;
 
         $action = new CaptureAction();
@@ -156,7 +193,10 @@ class CaptureActionTest extends GenericActionTest
         $action->execute(new Capture([]));
     }
 
-    public function testShouldSetTokenTargetUrlAsReturnUrlIfCapturePassedWithToken()
+    /**
+     * @test
+     */
+    public function shouldSetTokenTargetUrlAsReturnUrlIfCapturePassedWithToken()
     {
         $testCase = $this;
 
@@ -164,261 +204,328 @@ class CaptureActionTest extends GenericActionTest
 
         $token = new Token();
         $token->setTargetUrl($expectedTargetUrl);
-        $token->setDetails([]);
+        $token->setDetails(array());
 
         $gatewayMock = $this->createGatewayMock();
         $gatewayMock
-            ->expects($this->atLeast(2))
+            ->expects($this->at(0))
             ->method('execute')
-            ->withConsecutive(
-                [$this->isInstanceOf(GetHttpRequest::class)],
-                [$this->isInstanceOf(SetExpressCheckout::class)]
-            )
-            ->willReturnOnConsecutiveCalls(
-                null,
-                $this->returnCallback(function ($request) use ($testCase, $expectedTargetUrl) {
-                    $model = $request->getModel();
+            ->with($this->isInstanceOf(GetHttpRequest::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(1))
+            ->method('execute')
+            ->with($this->isInstanceOf(SetExpressCheckout::class))
+            ->will($this->returnCallback(function ($request) use ($testCase, $expectedTargetUrl) {
+                $model = $request->getModel();
 
-                    $testCase->assertSame($expectedTargetUrl, $model['RETURNURL']);
-                })
-            )
+                $testCase->assertEquals($expectedTargetUrl, $model['RETURNURL']);
+            }))
         ;
 
         $action = new CaptureAction();
         $action->setGateway($gatewayMock);
 
         $request = new Capture($token);
-        $request->setModel([]);
+        $request->setModel(array());
 
         $action->execute($request);
     }
 
-    public function testShouldSetTokenTargetUrlAsCancelUrlIfCapturePassedWithToken()
+    /**
+     * @test
+     */
+    public function shouldSetTokenTargetUrlAsCancelUrlIfCapturePassedWithToken()
     {
         $testCase = $this;
 
         $cancelUrl = 'http://thecancelurl/';
-        $expectedCancelUrl = $cancelUrl . '?cancelled=1';
+        $expectedCancelUrl = $cancelUrl.'?cancelled=1';
 
         $token = new Token();
         $token->setTargetUrl($cancelUrl);
-        $token->setDetails([]);
+        $token->setDetails(array());
 
         $gatewayMock = $this->createGatewayMock();
         $gatewayMock
-            ->expects($this->atLeast(2))
+            ->expects($this->at(0))
             ->method('execute')
-            ->withConsecutive(
-                [$this->isInstanceOf(GetHttpRequest::class)],
-                [$this->isInstanceOf(SetExpressCheckout::class)]
-            )
-            ->willReturnOnConsecutiveCalls(
-                null,
-                $this->returnCallback(function ($request) use ($testCase, $expectedCancelUrl) {
-                    $model = $request->getModel();
+            ->with($this->isInstanceOf(GetHttpRequest::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(1))
+            ->method('execute')
+            ->with($this->isInstanceOf(SetExpressCheckout::class))
+            ->will($this->returnCallback(function ($request) use ($testCase, $expectedCancelUrl) {
+                $model = $request->getModel();
 
-                    $testCase->assertSame($expectedCancelUrl, $model['CANCELURL']);
-                })
-            )
+                $testCase->assertEquals($expectedCancelUrl, $model['CANCELURL']);
+            }))
         ;
 
         $action = new CaptureAction();
         $action->setGateway($gatewayMock);
 
         $request = new Capture($token);
-        $request->setModel([]);
+        $request->setModel(array());
 
         $action->execute($request);
     }
 
-    public function testShouldNotLooseExistingGetParamWhenSettingTargetUrlAsCancelUrl()
+    /**
+     * @test
+     */
+    public function shouldNotLooseExistingGetParamWhenSettingTargetUrlAsCancelUrl()
     {
         $testCase = $this;
 
         $cancelUrl = 'http://thecancelurl/?existingGetParam=testValue';
-        $expectedCancelUrl = $cancelUrl . '&cancelled=1';
+        $expectedCancelUrl = $cancelUrl.'&cancelled=1';
 
         $token = new Token();
         $token->setTargetUrl($cancelUrl);
-        $token->setDetails([]);
+        $token->setDetails(array());
 
         $gatewayMock = $this->createGatewayMock();
 
         $gatewayMock
-            ->expects($this->atLeast(2))
+            ->expects($this->at(1))
             ->method('execute')
-            ->withConsecutive(
-                [$this->isInstanceOf(GetHttpRequest::class)],
-                [$this->isInstanceOf(SetExpressCheckout::class)]
-            )
-            ->willReturnOnConsecutiveCalls(
-                null,
-                $this->returnCallback(function ($request) use ($testCase, $expectedCancelUrl) {
-                    $model = $request->getModel();
+            ->with($this->isInstanceOf(SetExpressCheckout::class))
+            ->will($this->returnCallback(function ($request) use ($testCase, $expectedCancelUrl) {
+                $model = $request->getModel();
 
-                    $testCase->assertSame($expectedCancelUrl, $model['CANCELURL']);
-                })
-            )
+                $testCase->assertEquals($expectedCancelUrl, $model['CANCELURL']);
+            }))
         ;
 
         $action = new CaptureAction();
         $action->setGateway($gatewayMock);
 
         $request = new Capture($token);
-        $request->setModel([]);
+        $request->setModel(array());
 
         $action->execute($request);
     }
 
-    public function testShouldNotRequestSetExpressCheckoutActionAndAuthorizeActionIfTokenSetInModel()
+    /**
+     * @test
+     */
+    public function shouldNotRequestSetExpressCheckoutActionAndAuthorizeActionIfTokenSetInModel()
     {
         $gatewayMock = $this->createGatewayMock();
         $gatewayMock
-            ->expects($this->atLeast(2))
+            ->expects($this->at(0))
             ->method('execute')
-            ->withConsecutive(
-                [$this->isInstanceOf(GetHttpRequest::class)],
-                [$this->isInstanceOf(Sync::class)]
-            )
+            ->with($this->isInstanceOf(GetHttpRequest::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(1))
+            ->method('execute')
+            ->with($this->isInstanceOf(Sync::class))
         ;
 
         $action = new CaptureAction();
         $action->setGateway($gatewayMock);
 
-        $action->execute(new Capture([
+        $action->execute(new Capture(array(
             'TOKEN' => 'aToken',
-        ]));
+        )));
     }
 
-    public function testShouldRequestDoExpressCheckoutGatewayActionIfCheckoutStatusNotInitiatedAndPayerIdSetInModelAndUserActionCommit()
+    /**
+     * @test
+     */
+    public function shouldRequestDoExpressCheckoutGatewayActionIfCheckoutStatusNotInitiatedAndPayerIdSetInModelAndUserActionCommit()
     {
         $gatewayMock = $this->createGatewayMock();
         $gatewayMock
-            ->expects($this->atLeast(4))
+            ->expects($this->at(0))
             ->method('execute')
-            ->withConsecutive(
-                [$this->isInstanceOf(GetHttpRequest::class)],
-                [$this->isInstanceOf(Sync::class)],
-                [$this->isInstanceOf(DoExpressCheckoutPayment::class)],
-                [$this->isInstanceOf(Sync::class)]
-            )
+            ->with($this->isInstanceOf(GetHttpRequest::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(1))
+            ->method('execute')
+            ->with($this->isInstanceOf(Sync::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(2))
+            ->method('execute')
+            ->with($this->isInstanceOf(DoExpressCheckoutPayment::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(3))
+            ->method('execute')
+            ->with($this->isInstanceOf(Sync::class))
         ;
 
         $action = new CaptureAction();
         $action->setGateway($gatewayMock);
 
-        $action->execute(new Capture([
+        $action->execute(new Capture(array(
             'AUTHORIZE_TOKEN_USERACTION' => Api::USERACTION_COMMIT,
             'TOKEN' => 'aToken',
             'PAYERID' => 'aPayerId',
             'PAYMENTREQUEST_0_AMT' => 5,
             'CHECKOUTSTATUS' => Api::CHECKOUTSTATUS_PAYMENT_ACTION_NOT_INITIATED,
-        ]));
+        )));
     }
 
-    public function testShouldRequestConfirmOrderActionIfCheckoutStatusNotInitiatedAndPayerIdSetInModelAndUserActionNotCommit()
+    /**
+     * @test
+     */
+    public function shouldRequestConfirmOrderActionIfCheckoutStatusNotInitiatedAndPayerIdSetInModelAndUserActionNotCommit()
     {
         $gatewayMock = $this->createGatewayMock();
         $gatewayMock
-            ->expects($this->atLeast(5))
+            ->expects($this->at(0))
             ->method('execute')
-            ->withConsecutive(
-                [$this->isInstanceOf(GetHttpRequest::class)],
-                [$this->isInstanceOf(Sync::class)],
-                [$this->isInstanceOf(ConfirmOrder::class)],
-                [$this->isInstanceOf(DoExpressCheckoutPayment::class)],
-                [$this->isInstanceOf(Sync::class)]
-            )
+            ->with($this->isInstanceOf(GetHttpRequest::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(1))
+            ->method('execute')
+            ->with($this->isInstanceOf(Sync::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(2))
+            ->method('execute')
+            ->with($this->isInstanceOf(ConfirmOrder::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(3))
+            ->method('execute')
+            ->with($this->isInstanceOf(DoExpressCheckoutPayment::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(4))
+            ->method('execute')
+            ->with($this->isInstanceOf(Sync::class))
         ;
 
         $action = new CaptureAction();
         $action->setGateway($gatewayMock);
 
-        $action->execute(new Capture([
+        $action->execute(new Capture(array(
             'AUTHORIZE_TOKEN_USERACTION' => '',
             'TOKEN' => 'aToken',
             'PAYERID' => 'aPayerId',
             'PAYMENTREQUEST_0_AMT' => 5,
             'CHECKOUTSTATUS' => Api::CHECKOUTSTATUS_PAYMENT_ACTION_NOT_INITIATED,
-        ]));
+        )));
     }
 
-    public function testShouldRequestAuthorizeTokenIfPayerIdNotSetInModel()
+    /**
+     * @test
+     */
+    public function shouldRequestAuthorizeTokenIfPayerIdNotSetInModel()
     {
         $gatewayMock = $this->createGatewayMock();
         $gatewayMock
-            ->expects($this->atLeast(4))
+            ->expects($this->at(0))
             ->method('execute')
-            ->withConsecutive(
-                [$this->isInstanceOf(GetHttpRequest::class)],
-                [$this->isInstanceOf(Sync::class)],
-                [$this->isInstanceOf(AuthorizeToken::class)],
-                [$this->isInstanceOf(Sync::class)]
-            )
+            ->with($this->isInstanceOf(GetHttpRequest::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(1))
+            ->method('execute')
+            ->with($this->isInstanceOf(Sync::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(2))
+            ->method('execute')
+            ->with($this->isInstanceOf(AuthorizeToken::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(3))
+            ->method('execute')
+            ->with($this->isInstanceOf(Sync::class))
         ;
 
         $action = new CaptureAction();
         $action->setGateway($gatewayMock);
 
-        $action->execute(new Capture([
+        $action->execute(new Capture(array(
             'TOKEN' => 'aToken',
             'PAYERID' => null,
             'CHECKOUTSTATUS' => Api::CHECKOUTSTATUS_PAYMENT_ACTION_NOT_INITIATED,
-        ]));
+        )));
     }
 
-    public function testShouldNotRequestDoExpressCheckoutGatewayActionIfCheckoutStatusOtherThenNotInitiatedSetInModel()
+    /**
+     * @test
+     */
+    public function shouldNotRequestDoExpressCheckoutGatewayActionIfCheckoutStatusOtherThenNotInitiatedSetInModel()
     {
         $gatewayMock = $this->createGatewayMock();
         $gatewayMock
-            ->expects($this->atLeast(3))
+            ->expects($this->at(0))
             ->method('execute')
-            ->withConsecutive(
-                [$this->isInstanceOf(GetHttpRequest::class)],
-                [$this->isInstanceOf(Sync::class)],
-                [$this->isInstanceOf(Sync::class)]
-            )
+            ->with($this->isInstanceOf(GetHttpRequest::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(1))
+            ->method('execute')
+            ->with($this->isInstanceOf(Sync::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(2))
+            ->method('execute')
+            ->with($this->isInstanceOf(Sync::class))
         ;
 
         $action = new CaptureAction();
         $action->setGateway($gatewayMock);
 
-        $action->execute(new Capture([
+        $action->execute(new Capture(array(
             'TOKEN' => 'aToken',
             'PAYERID' => 'anId',
             'CHECKOUTSTATUS' => Api::CHECKOUTSTATUS_PAYMENT_ACTION_IN_PROGRESS,
-        ]));
+        )));
     }
 
-    public function testShouldNotRequestDoExpressCheckoutGatewayActionIfAmountZero()
+    /**
+     * @test
+     */
+    public function shouldNotRequestDoExpressCheckoutGatewayActionIfAmountZero()
     {
         $gatewayMock = $this->createGatewayMock();
         $gatewayMock
-            ->expects($this->atLeast(3))
+            ->expects($this->at(0))
             ->method('execute')
-            ->withConsecutive(
-                [$this->isInstanceOf(GetHttpRequest::class)],
-                [$this->isInstanceOf(Sync::class)],
-                [$this->isInstanceOf(Sync::class)]
-            )
+            ->with($this->isInstanceOf(GetHttpRequest::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(1))
+            ->method('execute')
+            ->with($this->isInstanceOf(Sync::class))
+        ;
+        $gatewayMock
+            ->expects($this->at(1))
+            ->method('execute')
+            ->with($this->isInstanceOf(Sync::class))
         ;
 
         $action = new CaptureAction();
         $action->setGateway($gatewayMock);
 
-        $action->execute(new Capture([
+        $action->execute(new Capture(array(
             'TOKEN' => 'aToken',
             'CHECKOUTSTATUS' => Api::CHECKOUTSTATUS_PAYMENT_ACTION_NOT_INITIATED,
             'PAYERID' => 'aPayerId',
             'PAYMENTREQUEST_0_AMT' => 0,
-        ]));
+        )));
     }
 
-    public function testShouldAddNotifyUrlIfTokenFactorySetAndCaptureTokenPassed()
+    /**
+     * @test
+     */
+    public function shouldAddNotifyUrlIfTokenFactorySetAndCaptureTokenPassed()
     {
-        $details = new ArrayObject([
+        $details = new \ArrayObject(array(
             'foo' => 'fooVal',
-        ]);
+        ));
 
         $captureToken = new Token();
         $captureToken->setGatewayName('theGatewayName');
@@ -445,17 +552,20 @@ class CaptureActionTest extends GenericActionTest
         $action->execute($request);
 
         $this->assertArrayHasKey('PAYMENTREQUEST_0_NOTIFYURL', $details);
-        $this->assertSame('theNotifyUrl', $details['PAYMENTREQUEST_0_NOTIFYURL']);
+        $this->assertEquals('theNotifyUrl', $details['PAYMENTREQUEST_0_NOTIFYURL']);
 
         $this->assertArrayHasKey('foo', $details);
-        $this->assertSame('fooVal', $details['foo']);
+        $this->assertEquals('fooVal', $details['foo']);
     }
 
-    public function testShouldNotAddNotifyUrlIfAlreadySet()
+    /**
+     * @test
+     */
+    public function shouldNotAddNotifyUrlIfAlreadySet()
     {
-        $details = new ArrayObject([
+        $details = new \ArrayObject(array(
             'PAYMENTREQUEST_0_NOTIFYURL' => 'alreadySetUrl',
-        ]);
+        ));
 
         $captureToken = new Token();
         $captureToken->setGatewayName('theGatewayName');
@@ -477,14 +587,17 @@ class CaptureActionTest extends GenericActionTest
         $action->execute($request);
 
         $this->assertArrayHasKey('PAYMENTREQUEST_0_NOTIFYURL', $details);
-        $this->assertSame('alreadySetUrl', $details['PAYMENTREQUEST_0_NOTIFYURL']);
+        $this->assertEquals('alreadySetUrl', $details['PAYMENTREQUEST_0_NOTIFYURL']);
     }
 
-    public function testShouldNotAddNotifyUrlIfPaypalTokenAlreadySet()
+    /**
+     * @test
+     */
+    public function shouldNotAddNotifyUrlIfPaypalTokenAlreadySet()
     {
-        $details = new ArrayObject([
+        $details = new \ArrayObject(array(
             'TOKEN' => 'foo',
-        ]);
+        ));
 
         $captureToken = new Token();
         $captureToken->setGatewayName('theGatewayName');
@@ -508,10 +621,13 @@ class CaptureActionTest extends GenericActionTest
         $this->assertArrayNotHasKey('PAYMENTREQUEST_0_NOTIFYURL', $details);
     }
 
-    public function testShouldNotAddNotifyUrlIfTokenFactoryNotSet()
+    /**
+     * @test
+     */
+    public function shouldNotAddNotifyUrlIfTokenFactoryNotSet()
     {
-        $details = new ArrayObject([
-        ]);
+        $details = new \ArrayObject(array(
+        ));
 
         $captureToken = new Token();
         $captureToken->setGatewayName('theGatewayName');
@@ -528,9 +644,12 @@ class CaptureActionTest extends GenericActionTest
         $this->assertArrayNotHasKey('PAYMENTREQUEST_0_NOTIFYURL', $details);
     }
 
-    public function testShouldNotAddNotifyUrlIfCaptureTokenNotSet()
+    /**
+     * @test
+     */
+    public function shouldNotAddNotifyUrlIfCaptureTokenNotSet()
     {
-        $details = new ArrayObject();
+        $details = new \ArrayObject();
 
         $tokenFactoryMock = $this->createMock(GenericTokenFactoryInterface::class);
         $tokenFactoryMock
@@ -550,7 +669,7 @@ class CaptureActionTest extends GenericActionTest
     }
 
     /**
-     * @return MockObject|GatewayInterface
+     * @return \PHPUnit_Framework_MockObject_MockObject|\Payum\Core\GatewayInterface
      */
     protected function createGatewayMock()
     {

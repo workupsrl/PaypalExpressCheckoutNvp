@@ -1,17 +1,17 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Action;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Action;
-
-use ArrayAccess;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\Request\GetStatusInterface;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Api;
 
 class RecurringPaymentDetailsStatusAction implements ActionInterface
 {
     /**
+     * {@inheritDoc}
+     *
      * @param GetStatusInterface $request
      */
     public function execute($request)
@@ -21,7 +21,7 @@ class RecurringPaymentDetailsStatusAction implements ActionInterface
         $model = ArrayObject::ensureArrayObject($request->getModel());
 
         foreach (range(0, 9) as $index) {
-            if ($model['L_ERRORCODE' . $index]) {
+            if ($model['L_ERRORCODE'.$index]) {
                 $request->markFailed();
 
                 return;
@@ -79,6 +79,9 @@ class RecurringPaymentDetailsStatusAction implements ActionInterface
         $request->markUnknown();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function supports($request)
     {
         if (false == $request instanceof GetStatusInterface) {
@@ -86,7 +89,7 @@ class RecurringPaymentDetailsStatusAction implements ActionInterface
         }
 
         $model = $request->getModel();
-        if (false == $model instanceof ArrayAccess) {
+        if (false == $model instanceof \ArrayAccess) {
             return false;
         }
 

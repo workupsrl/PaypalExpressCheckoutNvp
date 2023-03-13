@@ -1,16 +1,14 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Action\Api;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Action\Api;
-
-use ArrayAccess;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
 use Payum\Core\ApiAwareTrait;
 use Payum\Core\Bridge\Spl\ArrayObject;
-use Payum\Core\Exception\LogicException;
 use Payum\Core\Exception\RequestNotSupportedException;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\DoReferenceTransaction;
+use Payum\Core\Exception\LogicException;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Api;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\DoReferenceTransaction;
 
 class DoReferenceTransactionAction implements ActionInterface, ApiAwareInterface
 {
@@ -21,9 +19,12 @@ class DoReferenceTransactionAction implements ActionInterface, ApiAwareInterface
         $this->apiClass = Api::class;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function execute($request)
     {
-        /** @var DoReferenceTransaction $request */
+        /** @var $request DoReferenceTransaction */
         RequestNotSupportedException::assertSupports($this, $request);
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
@@ -43,10 +44,14 @@ class DoReferenceTransactionAction implements ActionInterface, ApiAwareInterface
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function supports($request)
     {
-        return $request instanceof DoReferenceTransaction &&
-            $request->getModel() instanceof ArrayAccess
+        return
+            $request instanceof DoReferenceTransaction &&
+            $request->getModel() instanceof \ArrayAccess
         ;
     }
 }

@@ -18,4 +18,4 @@ $rc = new ReflectionClass(GatewayInterface::class);
 $coreDir = dirname($rc->getFileName()) . '/Tests';
 
 $loader->add('Payum\Core\Tests', $coreDir);
-$loader->add('Payum\Paypal\ExpressCheckout\Nvp\Tests', $coreDir);
+$loader->add('Workup\Payum\Paypal\ExpressCheckout\Nvp\Tests', $coreDir);

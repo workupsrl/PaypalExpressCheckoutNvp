@@ -1,6 +1,5 @@
 <?php
-
-namespace Payum\Paypal\ExpressCheckout\Nvp\Action;
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Action;
 
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\Bridge\Spl\ArrayObject;
@@ -16,6 +15,8 @@ class ConvertPaymentAction implements ActionInterface, GatewayAwareInterface
     use GatewayAwareTrait;
 
     /**
+     * {@inheritDoc}
+     *
      * @param Convert $request
      */
     public function execute($request)
@@ -26,22 +27,26 @@ class ConvertPaymentAction implements ActionInterface, GatewayAwareInterface
         $payment = $request->getSource();
 
         $this->gateway->execute($currency = new GetCurrency($payment->getCurrencyCode()));
-        $divisor = 10 ** $currency->exp;
+        $divisor = pow(10, $currency->exp);
 
         $details = ArrayObject::ensureArrayObject($payment->getDetails());
         $details['INVNUM'] = $payment->getNumber();
         $details['PAYMENTREQUEST_0_CURRENCYCODE'] = $payment->getCurrencyCode();
         $details['PAYMENTREQUEST_0_AMT'] = $payment->getTotalAmount() / $divisor;
         $details['PAYMENTREQUEST_0_DESC'] = $payment->getDescription();
-
+        
         $request->setResult((array) $details);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function supports($request)
     {
-        return $request instanceof Convert &&
+        return
+            $request instanceof Convert &&
             $request->getSource() instanceof PaymentInterface &&
-            'array' == $request->getTo()
+            $request->getTo() == 'array'
         ;
     }
 }

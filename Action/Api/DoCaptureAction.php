@@ -1,8 +1,6 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Action\Api;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Action\Api;
-
-use ArrayAccess;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
 use Payum\Core\ApiAwareTrait;
@@ -10,9 +8,9 @@ use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\GatewayAwareInterface;
 use Payum\Core\GatewayAwareTrait;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\DoCapture;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\GetTransactionDetails;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Api;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\DoCapture;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\GetTransactionDetails;
 
 class DoCaptureAction implements ActionInterface, ApiAwareInterface, GatewayAwareInterface
 {
@@ -24,9 +22,12 @@ class DoCaptureAction implements ActionInterface, ApiAwareInterface, GatewayAwar
         $this->apiClass = Api::class;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function execute($request)
     {
-        /** @var DoCapture $request */
+        /** @var $request DoCapture */
         RequestNotSupportedException::assertSupports($this, $request);
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
@@ -34,7 +35,7 @@ class DoCaptureAction implements ActionInterface, ApiAwareInterface, GatewayAwar
 
         $fields = new ArrayObject([]);
         foreach ($this->getPaymentRequestNFields() as $field) {
-            $fields[$field] = $model['PAYMENTREQUEST_' . $paymentRequestN . '_' . $field];
+            $fields[$field] = $model['PAYMENTREQUEST_'.$paymentRequestN.'_'.$field];
         }
         $fields['AUTHORIZATIONID'] = $fields['TRANSACTIONID'];
 
@@ -45,19 +46,12 @@ class DoCaptureAction implements ActionInterface, ApiAwareInterface, GatewayAwar
         $this->gateway->execute(new GetTransactionDetails($model, $paymentRequestN));
     }
 
-    public function supports($request)
-    {
-        return $request instanceof DoCapture &&
-            $request->getModel() instanceof ArrayAccess
-        ;
-    }
-
     /**
      * @return array
      */
     protected function getPaymentRequestNFields()
     {
-        return [
+        return array(
             'TRANSACTIONID',
             'PARENTTRANSACTIONID',
             'RECEIPTID',
@@ -73,7 +67,18 @@ class DoCaptureAction implements ActionInterface, ApiAwareInterface, GatewayAwar
             'PAYMENTSTATUS',
             'PENDINGREASON',
             'REASONCODE',
-            'COMPLETETYPE',
-        ];
+            'COMPLETETYPE'
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function supports($request)
+    {
+        return
+            $request instanceof DoCapture &&
+            $request->getModel() instanceof \ArrayAccess
+        ;
     }
 }

@@ -1,72 +1,84 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Tests\Action\Api;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Tests\Action\Api;
-
-use ArrayAccess;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
-use Payum\Core\Exception\LogicException;
-use Payum\Core\Exception\RequestNotSupportedException;
-use Payum\Paypal\ExpressCheckout\Nvp\Action\Api\GetTransactionDetailsAction;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\GetTransactionDetails;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
-use ReflectionClass;
-use stdClass;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Action\Api\GetTransactionDetailsAction;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\GetTransactionDetails;
 
-class GetTransactionDetailsActionTest extends TestCase
+class GetTransactionDetailsActionTest extends \PHPUnit\Framework\TestCase
 {
-    public function testShouldImplementActionInterface()
+    /**
+     * @test
+     */
+    public function shouldImplementActionInterface()
     {
-        $rc = new ReflectionClass(GetTransactionDetailsAction::class);
+        $rc = new \ReflectionClass(GetTransactionDetailsAction::class);
 
         $this->assertTrue($rc->implementsInterface(ActionInterface::class));
     }
 
-    public function testShouldImplementApoAwareInterface()
+    /**
+     * @test
+     */
+    public function shouldImplementApoAwareInterface()
     {
-        $rc = new ReflectionClass(GetTransactionDetailsAction::class);
+        $rc = new \ReflectionClass(GetTransactionDetailsAction::class);
 
         $this->assertTrue($rc->implementsInterface(ApiAwareInterface::class));
     }
 
-    public function testShouldSupportGetTransactionDetailsRequestAndArrayAccessAsModel()
+    /**
+     * @test
+     */
+    public function shouldSupportGetTransactionDetailsRequestAndArrayAccessAsModel()
     {
         $action = new GetTransactionDetailsAction();
 
-        $request = new GetTransactionDetails($this->createMock(ArrayAccess::class), $paymentRequestN = 5);
+        $request = new GetTransactionDetails($this->createMock('ArrayAccess'), $paymentRequestN = 5);
 
         $this->assertTrue($action->supports($request));
     }
 
-    public function testShouldNotSupportAnythingNotGetTransactionDetailsRequest()
+    /**
+     * @test
+     */
+    public function shouldNotSupportAnythingNotGetTransactionDetailsRequest()
     {
         $action = new GetTransactionDetailsAction();
 
-        $this->assertFalse($action->supports(new stdClass()));
+        $this->assertFalse($action->supports(new \stdClass()));
     }
 
-    public function testThrowIfNotSupportedRequestGivenAsArgumentForExecute()
+    /**
+     * @test
+     */
+    public function throwIfNotSupportedRequestGivenAsArgumentForExecute()
     {
-        $this->expectException(RequestNotSupportedException::class);
+        $this->expectException(\Payum\Core\Exception\RequestNotSupportedException::class);
         $action = new GetTransactionDetailsAction();
 
-        $action->execute(new stdClass());
+        $action->execute(new \stdClass());
     }
 
-    public function testThrowIfZeroPaymentRequestTransactionIdNotSetInModel()
+    /**
+     * @test
+     */
+    public function throwIfZeroPaymentRequestTransactionIdNotSetInModel()
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(\Payum\Core\Exception\LogicException::class);
         $this->expectExceptionMessage('PAYMENTREQUEST_5_TRANSACTIONID must be set.');
         $action = new GetTransactionDetailsAction();
 
-        $request = new GetTransactionDetails([], $paymentRequestN = 5);
+        $request = new GetTransactionDetails(array(), $paymentRequestN = 5);
 
         $action->execute($request);
     }
 
-    public function testShouldCallApiGetTransactionDetailsMethodWithExpectedRequiredArguments()
+    /**
+     * @test
+     */
+    public function shouldCallApiGetTransactionDetailsMethodWithExpectedRequiredArguments()
     {
         $testCase = $this;
 
@@ -74,57 +86,60 @@ class GetTransactionDetailsActionTest extends TestCase
         $apiMock
             ->expects($this->once())
             ->method('getTransactionDetails')
-            ->willReturnCallback(function (array $fields) use ($testCase) {
+            ->will($this->returnCallback(function (array $fields) use ($testCase) {
                 $testCase->assertArrayHasKey('TRANSACTIONID', $fields);
-                $testCase->assertSame('theTransactionId', $fields['TRANSACTIONID']);
+                $testCase->assertEquals('theTransactionId', $fields['TRANSACTIONID']);
 
-                return [];
-            })
+                return array();
+            }))
         ;
 
         $action = new GetTransactionDetailsAction();
         $action->setApi($apiMock);
 
-        $request = new GetTransactionDetails([
+        $request = new GetTransactionDetails(array(
             'PAYMENTREQUEST_5_TRANSACTIONID' => 'theTransactionId',
-        ], $paymentRequestN = 5);
+        ), $paymentRequestN = 5);
 
         $action->execute($request);
     }
 
-    public function testShouldCallApiGetTransactionDetailsAndUpdateModelFromResponseOnSuccess()
+    /**
+     * @test
+     */
+    public function shouldCallApiGetTransactionDetailsAndUpdateModelFromResponseOnSuccess()
     {
         $apiMock = $this->createApiMock();
         $apiMock
             ->expects($this->once())
             ->method('getTransactionDetails')
-            ->willReturnCallback(function () {
-                return [
+            ->will($this->returnCallback(function () {
+                return array(
                     'PAYMENTSTATUS' => 'theStatus',
-                ];
-            })
+                );
+            }))
         ;
 
         $action = new GetTransactionDetailsAction();
         $action->setApi($apiMock);
 
-        $request = new GetTransactionDetails([
+        $request = new GetTransactionDetails(array(
             'PAYMENTREQUEST_5_TRANSACTIONID' => 'aTransactionId',
-        ], $paymentRequestN = 5);
+        ), $paymentRequestN = 5);
 
         $action->execute($request);
 
         $model = $request->getModel();
 
         $this->assertArrayHasKey('PAYMENTREQUEST_5_PAYMENTSTATUS', $model);
-        $this->assertSame('theStatus', $model['PAYMENTREQUEST_5_PAYMENTSTATUS']);
+        $this->assertEquals('theStatus', $model['PAYMENTREQUEST_5_PAYMENTSTATUS']);
     }
 
     /**
-     * @return MockObject|Api
+     * @return \PHPUnit_Framework_MockObject_MockObject|\Workup\Payum\Paypal\ExpressCheckout\Nvp\Api
      */
     protected function createApiMock()
     {
-        return $this->createMock(Api::class, [], [], '', false);
+        return $this->createMock('Workup\Payum\Paypal\ExpressCheckout\Nvp\Api', array(), array(), '', false);
     }
 }

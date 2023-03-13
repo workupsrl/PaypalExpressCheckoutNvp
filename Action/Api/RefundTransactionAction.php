@@ -1,15 +1,13 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Action\Api;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Action\Api;
-
-use ArrayAccess;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
 use Payum\Core\ApiAwareTrait;
 use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\RefundTransaction;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Api;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\RefundTransaction;
 
 class RefundTransactionAction implements ActionInterface, ApiAwareInterface
 {
@@ -20,9 +18,12 @@ class RefundTransactionAction implements ActionInterface, ApiAwareInterface
         $this->apiClass = Api::class;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function execute($request)
     {
-        /** @var RefundTransaction $request */
+        /** @var $request RefundTransaction */
         RequestNotSupportedException::assertSupports($this, $request);
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
@@ -33,10 +34,14 @@ class RefundTransactionAction implements ActionInterface, ApiAwareInterface
         );
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function supports($request)
     {
-        return $request instanceof RefundTransaction &&
-            $request->getModel() instanceof ArrayAccess
+        return
+            $request instanceof RefundTransaction &&
+            $request->getModel() instanceof \ArrayAccess
         ;
     }
 }

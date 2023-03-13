@@ -1,19 +1,20 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Action;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Action;
-
-use ArrayAccess;
 use Payum\Core\Bridge\Spl\ArrayObject;
-use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\Request\Capture;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\DoCapture;
+use Payum\Core\Exception\RequestNotSupportedException;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Api;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\DoCapture;
 
 class CaptureAction extends PurchaseAction
 {
+    /**
+     * {@inheritDoc}
+     */
     public function execute($request)
     {
-        /** @var Capture $request */
+        /** @var $request Capture */
         RequestNotSupportedException::assertSupports($this, $request);
 
         $details = ArrayObject::ensureArrayObject($request->getModel());
@@ -21,10 +22,8 @@ class CaptureAction extends PurchaseAction
         $details['PAYMENTREQUEST_0_PAYMENTACTION'] = Api::PAYMENTACTION_SALE;
 
         foreach (range(0, 9) as $index) {
-            if (Api::PENDINGREASON_AUTHORIZATION == $details['PAYMENTINFO_' . $index . '_PENDINGREASON']) {
-                $details->defaults([
-                    'PAYMENTREQUEST_' . $index . '_COMPLETETYPE' => 'Complete',
-                ]);
+            if (Api::PENDINGREASON_AUTHORIZATION == $details['PAYMENTINFO_'.$index.'_PENDINGREASON']) {
+                $details->defaults(['PAYMENTREQUEST_'.$index.'_COMPLETETYPE' => 'Complete']);
 
                 $this->gateway->execute(new DoCapture($details, $index));
             }
@@ -33,10 +32,14 @@ class CaptureAction extends PurchaseAction
         parent::execute($request);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function supports($request)
     {
-        return $request instanceof Capture &&
-            $request->getModel() instanceof ArrayAccess
+        return
+            $request instanceof Capture &&
+            $request->getModel() instanceof \ArrayAccess
         ;
     }
 }

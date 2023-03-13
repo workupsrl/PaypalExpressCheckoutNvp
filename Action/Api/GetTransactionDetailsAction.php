@@ -1,16 +1,14 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Action\Api;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Action\Api;
-
-use ArrayAccess;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
 use Payum\Core\ApiAwareTrait;
 use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\LogicException;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Api;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\GetTransactionDetails;
 use Payum\Core\Exception\RequestNotSupportedException;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\GetTransactionDetails;
 
 class GetTransactionDetailsAction implements ActionInterface, ApiAwareInterface
 {
@@ -21,32 +19,37 @@ class GetTransactionDetailsAction implements ActionInterface, ApiAwareInterface
         $this->apiClass = Api::class;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function execute($request)
     {
-        /** @var GetTransactionDetails $request */
+        /** @var $request GetTransactionDetails */
         RequestNotSupportedException::assertSupports($this, $request);
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
 
-        $transactionIndex = 'PAYMENTREQUEST_' . $request->getPaymentRequestN() . '_TRANSACTIONID';
+        $transactionIndex = 'PAYMENTREQUEST_'.$request->getPaymentRequestN().'_TRANSACTIONID';
         if (false == $model[$transactionIndex]) {
-            throw new LogicException($transactionIndex . ' must be set.');
+            throw new LogicException($transactionIndex.' must be set.');
         }
 
-        $result = $this->api->getTransactionDetails([
-            'TRANSACTIONID' => $model[$transactionIndex],
-        ]);
+        $result = $this->api->getTransactionDetails(array('TRANSACTIONID' => $model[$transactionIndex]));
         foreach ($result as $name => $value) {
             if (in_array($name, $this->getPaymentRequestNFields())) {
-                $model['PAYMENTREQUEST_' . $request->getPaymentRequestN() . '_' . $name] = $value;
+                $model['PAYMENTREQUEST_'.$request->getPaymentRequestN().'_'.$name] = $value;
             }
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function supports($request)
     {
-        return $request instanceof GetTransactionDetails &&
-            $request->getModel() instanceof ArrayAccess
+        return
+            $request instanceof GetTransactionDetails &&
+            $request->getModel() instanceof \ArrayAccess
         ;
     }
 
@@ -55,7 +58,7 @@ class GetTransactionDetailsAction implements ActionInterface, ApiAwareInterface
      */
     protected function getPaymentRequestNFields()
     {
-        return [
+        return array(
             'TRANSACTIONID',
             'PARENTTRANSACTIONID',
             'RECEIPTID',
@@ -71,6 +74,6 @@ class GetTransactionDetailsAction implements ActionInterface, ApiAwareInterface
             'PAYMENTSTATUS',
             'PENDINGREASON',
             'REASONCODE',
-        ];
+        );
     }
 }

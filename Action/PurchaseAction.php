@@ -1,42 +1,44 @@
 <?php
-
-namespace Payum\Paypal\ExpressCheckout\Nvp\Action;
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Action;
 
 use League\Uri\Http as HttpUri;
 use League\Uri\UriModifier;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\Bridge\Spl\ArrayObject;
-use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\GatewayAwareInterface;
 use Payum\Core\GatewayAwareTrait;
 use Payum\Core\Request\Capture;
 use Payum\Core\Request\GetHttpRequest;
 use Payum\Core\Request\Sync;
+use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\Security\GenericTokenFactoryAwareInterface;
 use Payum\Core\Security\GenericTokenFactoryAwareTrait;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\AuthorizeToken;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\ConfirmOrder;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\DoExpressCheckoutPayment;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\SetExpressCheckout;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\ConfirmOrder;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\SetExpressCheckout;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\AuthorizeToken;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\DoExpressCheckoutPayment;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Api;
 
 abstract class PurchaseAction implements ActionInterface, GatewayAwareInterface, GenericTokenFactoryAwareInterface
 {
     use GatewayAwareTrait;
     use GenericTokenFactoryAwareTrait;
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public function execute($request)
     {
-        /** @var Capture $request */
+        /** @var $request Capture */
         RequestNotSupportedException::assertSupports($this, $request);
 
         $details = ArrayObject::ensureArrayObject($request->getModel());
 
         $details->validateNotEmpty('PAYMENTREQUEST_0_PAYMENTACTION');
 
-        $details->defaults([
+        $details->defaults(array(
             'AUTHORIZE_TOKEN_USERACTION' => Api::USERACTION_COMMIT,
-        ]);
+        ));
 
         $this->gateway->execute($httpRequest = new GetHttpRequest());
         if (isset($httpRequest->query['cancelled'])) {

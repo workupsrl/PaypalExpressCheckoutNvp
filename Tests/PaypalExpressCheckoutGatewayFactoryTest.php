@@ -1,32 +1,50 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Tests;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Tests;
-
-use Payum\Core\Exception\LogicException;
 use Payum\Core\Tests\AbstractGatewayFactoryTest;
-use Payum\Paypal\ExpressCheckout\Nvp\PaypalExpressCheckoutGatewayFactory;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\PaypalExpressCheckoutGatewayFactory;
 
 class PaypalExpressCheckoutGatewayFactoryTest extends AbstractGatewayFactoryTest
 {
-    public function testShouldAddDefaultConfigPassedInConstructorWhileCreatingGatewayConfig()
+    protected function getGatewayFactoryClass(): string
     {
-        $factory = new PaypalExpressCheckoutGatewayFactory([
+        return PaypalExpressCheckoutGatewayFactory::class;
+    }
+
+    protected function getRequiredOptions(): array
+    {
+        return [
+            'username' => 'aName',
+            'password' => 'aPass',
+            'signature' => 'aSign',
+        ];
+    }
+
+    /**
+     * @test
+     */
+    public function shouldAddDefaultConfigPassedInConstructorWhileCreatingGatewayConfig()
+    {
+        $factory = new PaypalExpressCheckoutGatewayFactory(array(
             'foo' => 'fooVal',
             'bar' => 'barVal',
-        ]);
+        ));
 
         $config = $factory->createConfig();
 
         $this->assertIsArray($config);
 
         $this->assertArrayHasKey('foo', $config);
-        $this->assertSame('fooVal', $config['foo']);
+        $this->assertEquals('fooVal', $config['foo']);
 
         $this->assertArrayHasKey('bar', $config);
-        $this->assertSame('barVal', $config['bar']);
+        $this->assertEquals('barVal', $config['bar']);
     }
 
-    public function testShouldConfigContainDefaultOptions()
+    /**
+     * @test
+     */
+    public function shouldConfigContainDefaultOptions()
     {
         $factory = new PaypalExpressCheckoutGatewayFactory();
 
@@ -36,17 +54,15 @@ class PaypalExpressCheckoutGatewayFactoryTest extends AbstractGatewayFactoryTest
 
         $this->assertArrayHasKey('payum.default_options', $config);
         $this->assertEquals(
-            [
-                'username' => '',
-                'password' => '',
-                'signature' => '',
-                'sandbox' => true,
-            ],
+            array('username' => '', 'password' => '', 'signature' => '', 'sandbox' => true),
             $config['payum.default_options']
         );
     }
 
-    public function testShouldConfigContainFactoryNameAndTitle()
+    /**
+     * @test
+     */
+    public function shouldConfigContainFactoryNameAndTitle()
     {
         $factory = new PaypalExpressCheckoutGatewayFactory();
 
@@ -55,22 +71,28 @@ class PaypalExpressCheckoutGatewayFactoryTest extends AbstractGatewayFactoryTest
         $this->assertIsArray($config);
 
         $this->assertArrayHasKey('payum.factory_name', $config);
-        $this->assertSame('paypal_express_checkout_nvp', $config['payum.factory_name']);
+        $this->assertEquals('paypal_express_checkout_nvp', $config['payum.factory_name']);
 
         $this->assertArrayHasKey('payum.factory_title', $config);
-        $this->assertSame('PayPal ExpressCheckout', $config['payum.factory_title']);
+        $this->assertEquals('PayPal ExpressCheckout', $config['payum.factory_title']);
     }
 
-    public function testShouldThrowIfRequiredOptionsNotPassed()
+    /**
+     * @test
+     */
+    public function shouldThrowIfRequiredOptionsNotPassed()
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(\Payum\Core\Exception\LogicException::class);
         $this->expectExceptionMessage('The username, password, signature fields are required.');
         $factory = new PaypalExpressCheckoutGatewayFactory();
 
         $factory->create();
     }
 
-    public function testShouldConfigurePaths()
+    /**
+     * @test
+     */
+    public function shouldConfigurePaths()
     {
         $factory = new PaypalExpressCheckoutGatewayFactory();
 
@@ -89,19 +111,5 @@ class PaypalExpressCheckoutGatewayFactoryTest extends AbstractGatewayFactoryTest
         $this->assertArrayHasKey('PayumPaypalExpressCheckout', $config['payum.paths']);
         $this->assertStringEndsWith('Resources/views', $config['payum.paths']['PayumPaypalExpressCheckout']);
         $this->assertFileExists($config['payum.paths']['PayumPaypalExpressCheckout']);
-    }
-
-    protected function getGatewayFactoryClass(): string
-    {
-        return PaypalExpressCheckoutGatewayFactory::class;
-    }
-
-    protected function getRequiredOptions(): array
-    {
-        return [
-            'username' => 'aName',
-            'password' => 'aPass',
-            'signature' => 'aSign',
-        ];
     }
 }

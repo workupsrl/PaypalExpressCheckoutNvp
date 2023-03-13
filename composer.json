@@ -1,5 +1,5 @@
 {
-    "name": "payum/paypal-express-checkout-nvp",
+    "name": "workup/payum-paypal-express-checkout-nvp",
     "type": "library",
     "description": "The Payum extension. It provides Paypal ExpressCheckout payment integration.",
     "keywords": ["payment", "paypal", "express checkout", "digital goods", "recurring payment"],
@@ -30,9 +30,8 @@
         "bin-dir": "bin"
     },
     "autoload": {
-        "psr-0": { "Payum\\Paypal\\ExpressCheckout\\Nvp": "" }
+        "psr-0": { "Workup\\Payum\\Paypal\\ExpressCheckout\\Nvp": "" }
     },
-    "target-dir": "Payum/Paypal/ExpressCheckout/Nvp",
     "extra": {
         "branch-alias": {
             "dev-master": "2.0.x-dev"

@@ -1,8 +1,6 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Action\Api;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Action\Api;
-
-use ArrayAccess;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
 use Payum\Core\ApiAwareTrait;
@@ -11,8 +9,8 @@ use Payum\Core\Exception\LogicException;
 use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\GatewayAwareInterface;
 use Payum\Core\GatewayAwareTrait;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\DoVoid;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Api;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\DoVoid;
 
 class DoVoidAction implements ActionInterface, ApiAwareInterface, GatewayAwareInterface
 {
@@ -25,7 +23,9 @@ class DoVoidAction implements ActionInterface, ApiAwareInterface, GatewayAwareIn
     }
 
     /**
-     * @param DoVoid $request
+     * {@inheritdoc}
+     *
+     * @param $request DoVoid
      */
     public function execute($request)
     {
@@ -42,10 +42,14 @@ class DoVoidAction implements ActionInterface, ApiAwareInterface, GatewayAwareIn
         );
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function supports($request)
     {
-        return $request instanceof DoVoid &&
-            $request->getModel() instanceof ArrayAccess
+        return
+            $request instanceof DoVoid &&
+            $request->getModel() instanceof \ArrayAccess
         ;
     }
 }

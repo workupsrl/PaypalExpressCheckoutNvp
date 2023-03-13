@@ -1,17 +1,17 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Action;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Action;
-
-use ArrayAccess;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\Request\GetStatusInterface;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Api;
 
 class PaymentDetailsStatusAction implements ActionInterface
 {
     /**
+     * {@inheritDoc}
+     *
      * @param GetStatusInterface $request
      */
     public function execute($request)
@@ -21,7 +21,7 @@ class PaymentDetailsStatusAction implements ActionInterface
         $model = ArrayObject::ensureArrayObject($request->getModel());
 
         foreach (range(0, 9) as $index) {
-            if (Api::L_ERRORCODE_PAYMENT_NOT_AUTHORIZED == $model['L_ERRORCODE' . $index]) {
+            if (Api::L_ERRORCODE_PAYMENT_NOT_AUTHORIZED == $model['L_ERRORCODE'.$index]) {
                 $request->markCanceled();
 
                 return;
@@ -29,7 +29,7 @@ class PaymentDetailsStatusAction implements ActionInterface
         }
 
         foreach (range(0, 9) as $index) {
-            if ($model['L_ERRORCODE' . $index]) {
+            if ($model['L_ERRORCODE'.$index]) {
                 $request->markFailed();
 
                 return;
@@ -56,7 +56,7 @@ class PaymentDetailsStatusAction implements ActionInterface
             $model['PAYERID'] &&
             Api::CHECKOUTSTATUS_PAYMENT_ACTION_NOT_INITIATED == $model['CHECKOUTSTATUS'] &&
             $model['L_BILLINGTYPE0'] &&
-            0 == $model['PAYMENTREQUEST_0_AMT']
+            $model['PAYMENTREQUEST_0_AMT'] == 0
         ) {
             $request->markCaptured();
 
@@ -93,28 +93,28 @@ class PaymentDetailsStatusAction implements ActionInterface
             $voidedCounter = 0;
             $allCounter = 0;
             foreach (range(0, 9) as $index) {
-                if (null === $paymentStatus = $model['PAYMENTINFO_' . $index . '_PAYMENTSTATUS']) {
+                if (null === $paymentStatus = $model['PAYMENTREQUEST_'.$index.'_PAYMENTSTATUS']) {
                     continue;
                 }
 
                 $allCounter++;
 
-                $refundStatuses = [
+                $refundStatuses = array(
                     Api::PAYMENTSTATUS_REFUNDED,
                     Api::PAYMENTSTATUS_PARTIALLY_REFUNDED,
-                ];
+                );
                 if (in_array($paymentStatus, $refundStatuses)) {
                     $request->markRefunded();
 
                     return;
                 }
 
-                $pendingStatuses = [
+                $pendingStatuses = array(
                     Api::PAYMENTSTATUS_IN_PROGRESS,
                     Api::PAYMENTSTATUS_PENDING,
-                ];
+                );
                 if (in_array($paymentStatus, $pendingStatuses)) {
-                    if (Api::PENDINGREASON_AUTHORIZATION == $model['PAYMENTINFO_' . $index . '_PENDINGREASON']) {
+                    if (Api::PENDINGREASON_AUTHORIZATION == $model['PAYMENTREQUEST_'.$index.'_PENDINGREASON']) {
                         $authorizedCounter++;
                     } else {
                         $request->markPending();
@@ -123,32 +123,32 @@ class PaymentDetailsStatusAction implements ActionInterface
                     }
                 }
 
-                $canceledStatuses = [
+                $canceledStatuses = array(
                     Api::PAYMENTSTATUS_VOIDED,
-                ];
+                );
                 if (in_array($paymentStatus, $canceledStatuses)) {
-                    if (Api::PENDINGREASON_AUTHORIZATION == $model['PAYMENTINFO_' . $index . '_PENDINGREASON']) {
+                    if (Api::PENDINGREASON_AUTHORIZATION == $model['PAYMENTREQUEST_'.$index.'_PENDINGREASON']) {
                         $voidedCounter++;
                     }
                 }
 
-                $failedStatuses = [
+                $failedStatuses = array(
                     Api::PAYMENTSTATUS_FAILED,
                     Api::PAYMENTSTATUS_EXPIRED,
                     Api::PAYMENTSTATUS_DENIED,
                     Api::PAYMENTSTATUS_REVERSED,
                     Api::PAYMENTSTATUS_CANCELED_REVERSAL,
-                ];
+                );
                 if (in_array($paymentStatus, $failedStatuses)) {
                     $request->markFailed();
 
                     return;
                 }
 
-                $completedStatuses = [
+                $completedStatuses = array(
                     Api::PAYMENTSTATUS_COMPLETED,
                     Api::PAYMENTSTATUS_PROCESSED,
-                ];
+                );
                 if (in_array($paymentStatus, $completedStatuses)) {
                     $completedCounter++;
                 }
@@ -174,6 +174,9 @@ class PaymentDetailsStatusAction implements ActionInterface
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function supports($request)
     {
         if (false == $request instanceof GetStatusInterface) {
@@ -181,7 +184,7 @@ class PaymentDetailsStatusAction implements ActionInterface
         }
 
         $model = $request->getModel();
-        if (false == $model instanceof ArrayAccess) {
+        if (false == $model instanceof \ArrayAccess) {
             return false;
         }
 

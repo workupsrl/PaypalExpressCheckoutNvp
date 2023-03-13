@@ -1,72 +1,84 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Tests\Action\Api;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Tests\Action\Api;
-
-use ArrayAccess;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
-use Payum\Core\Exception\LogicException;
-use Payum\Core\Exception\RequestNotSupportedException;
-use Payum\Paypal\ExpressCheckout\Nvp\Action\Api\GetExpressCheckoutDetailsAction;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\GetExpressCheckoutDetails;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
-use ReflectionClass;
-use stdClass;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Action\Api\GetExpressCheckoutDetailsAction;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\GetExpressCheckoutDetails;
 
-class GetExpressCheckoutDetailsActionTest extends TestCase
+class GetExpressCheckoutDetailsActionTest extends \PHPUnit\Framework\TestCase
 {
-    public function testShouldImplementActionInterface()
+    /**
+     * @test
+     */
+    public function shouldImplementActionInterface()
     {
-        $rc = new ReflectionClass(GetExpressCheckoutDetailsAction::class);
+        $rc = new \ReflectionClass(GetExpressCheckoutDetailsAction::class);
 
         $this->assertTrue($rc->implementsInterface(ActionInterface::class));
     }
 
-    public function testShouldImplementApoAwareInterface()
+    /**
+     * @test
+     */
+    public function shouldImplementApoAwareInterface()
     {
-        $rc = new ReflectionClass(GetExpressCheckoutDetailsAction::class);
+        $rc = new \ReflectionClass(GetExpressCheckoutDetailsAction::class);
 
         $this->assertTrue($rc->implementsInterface(ApiAwareInterface::class));
     }
 
-    public function testShouldSupportGetExpressCheckoutDetailsRequestAndArrayAccessAsModel()
+    /**
+     * @test
+     */
+    public function shouldSupportGetExpressCheckoutDetailsRequestAndArrayAccessAsModel()
     {
         $action = new GetExpressCheckoutDetailsAction();
 
         $this->assertTrue(
-            $action->supports(new GetExpressCheckoutDetails($this->createMock(ArrayAccess::class)))
+            $action->supports(new GetExpressCheckoutDetails($this->createMock('ArrayAccess')))
         );
     }
 
-    public function testShouldNotSupportAnythingNotGetExpressCheckoutDetailsRequest()
+    /**
+     * @test
+     */
+    public function shouldNotSupportAnythingNotGetExpressCheckoutDetailsRequest()
     {
         $action = new GetExpressCheckoutDetailsAction();
 
-        $this->assertFalse($action->supports(new stdClass()));
+        $this->assertFalse($action->supports(new \stdClass()));
     }
 
-    public function testThrowIfNotSupportedRequestGivenAsArgumentForExecute()
+    /**
+     * @test
+     */
+    public function throwIfNotSupportedRequestGivenAsArgumentForExecute()
     {
-        $this->expectException(RequestNotSupportedException::class);
+        $this->expectException(\Payum\Core\Exception\RequestNotSupportedException::class);
         $action = new GetExpressCheckoutDetailsAction();
 
-        $action->execute(new stdClass());
+        $action->execute(new \stdClass());
     }
 
-    public function testThrowIfTokenNotSetInModel()
+    /**
+     * @test
+     */
+    public function throwIfTokenNotSetInModel()
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(\Payum\Core\Exception\LogicException::class);
         $this->expectExceptionMessage('TOKEN must be set. Have you run SetExpressCheckoutAction?');
         $action = new GetExpressCheckoutDetailsAction();
 
-        $request = new GetExpressCheckoutDetails([]);
+        $request = new GetExpressCheckoutDetails(array());
 
         $action->execute($request);
     }
 
-    public function testShouldCallApiGetExpressCheckoutDetailsMethodWithExpectedRequiredArguments()
+    /**
+     * @test
+     */
+    public function shouldCallApiGetExpressCheckoutDetailsMethodWithExpectedRequiredArguments()
     {
         $testCase = $this;
 
@@ -74,61 +86,64 @@ class GetExpressCheckoutDetailsActionTest extends TestCase
         $apiMock
             ->expects($this->once())
             ->method('getExpressCheckoutDetails')
-            ->willReturnCallback(function (array $fields) use ($testCase) {
+            ->will($this->returnCallback(function (array $fields) use ($testCase) {
                 $testCase->assertArrayHasKey('TOKEN', $fields);
-                $testCase->assertSame('theToken', $fields['TOKEN']);
+                $testCase->assertEquals('theToken', $fields['TOKEN']);
 
-                return [];
-            })
+                return array();
+            }))
         ;
 
         $action = new GetExpressCheckoutDetailsAction();
         $action->setApi($apiMock);
 
-        $request = new GetExpressCheckoutDetails([
+        $request = new GetExpressCheckoutDetails(array(
             'TOKEN' => 'theToken',
-        ]);
+        ));
 
         $action->execute($request);
     }
 
-    public function testShouldCallApiGetExpressCheckoutDetailsMethodAndUpdateModelFromResponseOnSuccess()
+    /**
+     * @test
+     */
+    public function shouldCallApiGetExpressCheckoutDetailsMethodAndUpdateModelFromResponseOnSuccess()
     {
         $apiMock = $this->createApiMock();
         $apiMock
             ->expects($this->once())
             ->method('getExpressCheckoutDetails')
-            ->willReturnCallback(function () {
-                return [
+            ->will($this->returnCallback(function () {
+                return array(
                     'FIRSTNAME' => 'theFirstname',
                     'EMAIL' => 'the@example.com',
-                ];
-            })
+                );
+            }))
         ;
 
         $action = new GetExpressCheckoutDetailsAction();
         $action->setApi($apiMock);
 
-        $request = new GetExpressCheckoutDetails([
+        $request = new GetExpressCheckoutDetails(array(
             'TOKEN' => 'aToken',
-        ]);
+        ));
 
         $action->execute($request);
 
         $model = $request->getModel();
 
         $this->assertArrayHasKey('FIRSTNAME', $model);
-        $this->assertSame('theFirstname', $model['FIRSTNAME']);
+        $this->assertEquals('theFirstname', $model['FIRSTNAME']);
 
         $this->assertArrayHasKey('EMAIL', $model);
-        $this->assertSame('the@example.com', $model['EMAIL']);
+        $this->assertEquals('the@example.com', $model['EMAIL']);
     }
 
     /**
-     * @return MockObject|Api
+     * @return \PHPUnit_Framework_MockObject_MockObject|\Workup\Payum\Paypal\ExpressCheckout\Nvp\Api
      */
     protected function createApiMock()
     {
-        return $this->createMock(Api::class, [], [], '', false);
+        return $this->createMock('Workup\Payum\Paypal\ExpressCheckout\Nvp\Api', array(), array(), '', false);
     }
 }

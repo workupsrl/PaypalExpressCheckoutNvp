@@ -1,68 +1,80 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Tests\Action\Api;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Tests\Action\Api;
-
-use ArrayAccess;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
-use Payum\Core\Exception\LogicException;
-use Payum\Core\Exception\RequestNotSupportedException;
-use Payum\Paypal\ExpressCheckout\Nvp\Action\Api\CreateBillingAgreementAction;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\CreateBillingAgreement;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
-use ReflectionClass;
-use stdClass;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Action\Api\CreateBillingAgreementAction;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\CreateBillingAgreement;
 
-class CreateBillingAgreementActionTest extends TestCase
+class CreateBillingAgreementActionTest extends \PHPUnit\Framework\TestCase
 {
-    public function testShouldImplementActionInterface()
+    /**
+     * @test
+     */
+    public function shouldImplementActionInterface()
     {
-        $rc = new ReflectionClass(CreateBillingAgreementAction::class);
+        $rc = new \ReflectionClass(CreateBillingAgreementAction::class);
 
         $this->assertTrue($rc->implementsInterface(ActionInterface::class));
     }
 
-    public function testShouldImplementApoAwareInterface()
+    /**
+     * @test
+     */
+    public function shouldImplementApoAwareInterface()
     {
-        $rc = new ReflectionClass(CreateBillingAgreementAction::class);
+        $rc = new \ReflectionClass(CreateBillingAgreementAction::class);
 
         $this->assertTrue($rc->implementsInterface(ApiAwareInterface::class));
     }
 
-    public function testShouldSupportCreateBillingAgreementRequestAndArrayAccessAsModel()
+    /**
+     * @test
+     */
+    public function shouldSupportCreateBillingAgreementRequestAndArrayAccessAsModel()
     {
         $action = new CreateBillingAgreementAction();
 
-        $this->assertTrue($action->supports(new CreateBillingAgreement($this->createMock(ArrayAccess::class))));
+        $this->assertTrue($action->supports(new CreateBillingAgreement($this->createMock('ArrayAccess'))));
     }
 
-    public function testShouldNotSupportAnythingNotCreateBillingAgreementRequest()
+    /**
+     * @test
+     */
+    public function shouldNotSupportAnythingNotCreateBillingAgreementRequest()
     {
         $action = new CreateBillingAgreementAction();
 
-        $this->assertFalse($action->supports(new stdClass()));
+        $this->assertFalse($action->supports(new \stdClass()));
     }
 
-    public function testThrowIfNotSupportedRequestGivenAsArgumentForExecute()
+    /**
+     * @test
+     */
+    public function throwIfNotSupportedRequestGivenAsArgumentForExecute()
     {
-        $this->expectException(RequestNotSupportedException::class);
+        $this->expectException(\Payum\Core\Exception\RequestNotSupportedException::class);
         $action = new CreateBillingAgreementAction();
 
-        $action->execute(new stdClass());
+        $action->execute(new \stdClass());
     }
 
-    public function testThrowIfTokenNotSetInModel()
+    /**
+     * @test
+     */
+    public function throwIfTokenNotSetInModel()
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(\Payum\Core\Exception\LogicException::class);
         $this->expectExceptionMessage('TOKEN must be set. Have you run SetExpressCheckoutAction?');
         $action = new CreateBillingAgreementAction();
 
-        $action->execute(new CreateBillingAgreement([]));
+        $action->execute(new CreateBillingAgreement(array()));
     }
 
-    public function testShouldCallApiCreateBillingAgreementMethodWithExpectedRequiredArguments()
+    /**
+     * @test
+     */
+    public function shouldCallApiCreateBillingAgreementMethodWithExpectedRequiredArguments()
     {
         $testCase = $this;
 
@@ -70,61 +82,64 @@ class CreateBillingAgreementActionTest extends TestCase
         $apiMock
             ->expects($this->once())
             ->method('createBillingAgreement')
-            ->willReturnCallback(function (array $fields) use ($testCase) {
+            ->will($this->returnCallback(function (array $fields) use ($testCase) {
                 $testCase->assertArrayHasKey('TOKEN', $fields);
-                $testCase->assertSame('theToken', $fields['TOKEN']);
+                $testCase->assertEquals('theToken', $fields['TOKEN']);
 
-                return [];
-            })
+                return array();
+            }))
         ;
 
         $action = new CreateBillingAgreementAction();
         $action->setApi($apiMock);
 
-        $request = new CreateBillingAgreement([
+        $request = new CreateBillingAgreement(array(
             'TOKEN' => 'theToken',
-        ]);
+        ));
 
         $action->execute($request);
     }
 
-    public function testShouldCallApiCreateBillingMethodAndUpdateModelFromResponseOnSuccess()
+    /**
+     * @test
+     */
+    public function shouldCallApiCreateBillingMethodAndUpdateModelFromResponseOnSuccess()
     {
         $apiMock = $this->createApiMock();
         $apiMock
             ->expects($this->once())
             ->method('createBillingAgreement')
-            ->willReturnCallback(function () {
-                return [
+            ->will($this->returnCallback(function () {
+                return array(
                     'FIRSTNAME' => 'theFirstname',
                     'EMAIL' => 'the@example.com',
-                ];
-            })
+                );
+            }))
         ;
 
         $action = new CreateBillingAgreementAction();
         $action->setApi($apiMock);
 
-        $request = new CreateBillingAgreement([
+        $request = new CreateBillingAgreement(array(
             'TOKEN' => 'aToken',
-        ]);
+        ));
 
         $action->execute($request);
 
         $model = $request->getModel();
 
         $this->assertArrayHasKey('FIRSTNAME', $model);
-        $this->assertSame('theFirstname', $model['FIRSTNAME']);
+        $this->assertEquals('theFirstname', $model['FIRSTNAME']);
 
         $this->assertArrayHasKey('EMAIL', $model);
-        $this->assertSame('the@example.com', $model['EMAIL']);
+        $this->assertEquals('the@example.com', $model['EMAIL']);
     }
 
     /**
-     * @return MockObject|Api
+     * @return \PHPUnit_Framework_MockObject_MockObject|\Workup\Payum\Paypal\ExpressCheckout\Nvp\Api
      */
     protected function createApiMock()
     {
-        return $this->createMock(Api::class, [], [], '', false);
+        return $this->createMock('Workup\Payum\Paypal\ExpressCheckout\Nvp\Api', array(), array(), '', false);
     }
 }

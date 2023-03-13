@@ -1,25 +1,26 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Action;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Action;
-
-use ArrayAccess;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\Bridge\Spl\ArrayObject;
-use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\GatewayAwareInterface;
 use Payum\Core\GatewayAwareTrait;
 use Payum\Core\Request\Sync;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\GetExpressCheckoutDetails;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\GetTransactionDetails;
+use Payum\Core\Exception\RequestNotSupportedException;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Api;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\GetExpressCheckoutDetails;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\GetTransactionDetails;
 
 class PaymentDetailsSyncAction implements ActionInterface, GatewayAwareInterface
 {
     use GatewayAwareTrait;
 
+    /**
+     * {@inheritDoc}
+     */
     public function execute($request)
     {
-        /** @var Sync $request */
+        /** @var $request Sync */
         RequestNotSupportedException::assertSupports($this, $request);
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
@@ -28,9 +29,9 @@ class PaymentDetailsSyncAction implements ActionInterface, GatewayAwareInterface
             return;
         }
 
-        $copiedModel = new ArrayObject([
+        $copiedModel = new ArrayObject(array(
             'TOKEN' => $model['TOKEN'],
-        ]);
+        ));
 
         $this->gateway->execute(new GetExpressCheckoutDetails($copiedModel));
         if (Api::L_ERRORCODE_SESSION_HAS_EXPIRED != $copiedModel['L_ERRORCODE0']) {
@@ -38,12 +39,15 @@ class PaymentDetailsSyncAction implements ActionInterface, GatewayAwareInterface
         }
 
         foreach (range(0, 9) as $index) {
-            if ($model['PAYMENTREQUEST_' . $index . '_TRANSACTIONID']) {
+            if ($model['PAYMENTREQUEST_'.$index.'_TRANSACTIONID']) {
                 $this->gateway->execute(new GetTransactionDetails($model, $index));
             }
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function supports($request)
     {
         if (false == $request instanceof Sync) {
@@ -51,7 +55,7 @@ class PaymentDetailsSyncAction implements ActionInterface, GatewayAwareInterface
         }
 
         $model = $request->getModel();
-        if (false == $model instanceof ArrayAccess) {
+        if (false == $model instanceof \ArrayAccess) {
             return false;
         }
 

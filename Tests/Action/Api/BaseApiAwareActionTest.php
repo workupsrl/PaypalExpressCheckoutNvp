@@ -1,53 +1,54 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Tests\Action\Api;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Tests\Action\Api;
-
-use Payum\Core\Action\ActionInterface;
-use Payum\Core\ApiAwareInterface;
-use Payum\Core\Exception\UnsupportedApiException;
-use Payum\Paypal\ExpressCheckout\Nvp\Action\Api\BaseApiAwareAction;
-use Payum\Paypal\ExpressCheckout\Nvp\Api;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
-use ReflectionClass;
-use stdClass;
-
-class BaseApiAwareActionTest extends TestCase
+class BaseApiAwareActionTest extends \PHPUnit\Framework\TestCase
 {
-    public function testShouldImplementActionInterface()
+    /**
+     * @test
+     */
+    public function shouldImplementActionInterface()
     {
-        $rc = new ReflectionClass(BaseApiAwareAction::class);
+        $rc = new \ReflectionClass('Workup\Payum\Paypal\ExpressCheckout\Nvp\Action\Api\BaseApiAwareAction');
 
-        $this->assertTrue($rc->isSubclassOf(ActionInterface::class));
+        $this->assertTrue($rc->isSubclassOf('Payum\Core\Action\ActionInterface'));
     }
 
-    public function testShouldImplementApiAwareInterface()
+    /**
+     * @test
+     */
+    public function shouldImplementApiAwareInterface()
     {
-        $rc = new ReflectionClass(BaseApiAwareAction::class);
+        $rc = new \ReflectionClass('Workup\Payum\Paypal\ExpressCheckout\Nvp\Action\Api\BaseApiAwareAction');
 
-        $this->assertTrue($rc->isSubclassOf(ApiAwareInterface::class));
+        $this->assertTrue($rc->isSubclassOf('Payum\Core\ApiAwareInterface'));
     }
 
-    public function testShouldBeAbstract()
+    /**
+     * @test
+     */
+    public function shouldBeAbstract()
     {
-        $rc = new ReflectionClass(BaseApiAwareAction::class);
+        $rc = new \ReflectionClass('Workup\Payum\Paypal\ExpressCheckout\Nvp\Action\Api\BaseApiAwareAction');
 
         $this->assertTrue($rc->isAbstract());
     }
 
-    public function testThrowIfUnsupportedApiGiven()
+    /**
+     * @test
+     */
+    public function throwIfUnsupportedApiGiven()
     {
-        $this->expectException(UnsupportedApiException::class);
-        $action = $this->getMockForAbstractClass(BaseApiAwareAction::class);
+        $this->expectException(\Payum\Core\Exception\UnsupportedApiException::class);
+        $action = $this->getMockForAbstractClass('Workup\Payum\Paypal\ExpressCheckout\Nvp\Action\Api\BaseApiAwareAction');
 
-        $action->setApi(new stdClass());
+        $action->setApi(new \stdClass());
     }
 
     /**
-     * @return MockObject|Api
+     * @return \PHPUnit_Framework_MockObject_MockObject|\Workup\Payum\Paypal\ExpressCheckout\Nvp\Api
      */
     protected function createApiMock()
     {
-        return $this->createMock(Api::class, [], [], '', false);
+        return $this->createMock('Workup\Payum\Paypal\ExpressCheckout\Nvp\Api', array(), array(), '', false);
     }
 }

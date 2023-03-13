@@ -1,56 +1,63 @@
 <?php
+namespace Workup\Payum\Paypal\ExpressCheckout\Nvp\Tests\Action;
 
-namespace Payum\Paypal\ExpressCheckout\Nvp\Tests\Action;
-
-use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\GatewayAwareInterface;
-use Payum\Core\GatewayInterface;
 use Payum\Core\Request\Sync;
-use Payum\Paypal\ExpressCheckout\Nvp\Action\RecurringPaymentDetailsSyncAction;
-use Payum\Paypal\ExpressCheckout\Nvp\Request\Api\GetRecurringPaymentsProfileDetails;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
-use ReflectionClass;
-use stdClass;
+use Workup\Payum\Paypal\ExpressCheckout\Nvp\Action\RecurringPaymentDetailsSyncAction;
 
-class RecurringPaymentDetailsSyncActionTest extends TestCase
+class RecurringPaymentDetailsSyncActionTest extends \PHPUnit\Framework\TestCase
 {
-    public function testShouldImplementGatewayAwareInterface()
+    /**
+     * @test
+     */
+    public function shouldImplementGatewayAwareInterface()
     {
-        $rc = new ReflectionClass(RecurringPaymentDetailsSyncAction::class);
+        $rc = new \ReflectionClass(RecurringPaymentDetailsSyncAction::class);
 
         $this->assertTrue($rc->implementsInterface(GatewayAwareInterface::class));
     }
 
-    public function testShouldSupportSyncAndArrayAsModelWhichHasBillingPeriodSet()
+    /**
+     * @test
+     */
+    public function shouldSupportSyncAndArrayAsModelWhichHasBillingPeriodSet()
     {
         $action = new RecurringPaymentDetailsSyncAction();
 
-        $paymentDetails = [
+        $paymentDetails = array(
             'BILLINGPERIOD' => 12,
-        ];
+        );
 
         $request = new Sync($paymentDetails);
 
         $this->assertTrue($action->supports($request));
     }
 
-    public function testShouldNotSupportAnythingNotSyncRequest()
+    /**
+     * @test
+     */
+    public function shouldNotSupportAnythingNotSyncRequest()
     {
         $action = new RecurringPaymentDetailsSyncAction();
 
-        $this->assertFalse($action->supports(new stdClass()));
+        $this->assertFalse($action->supports(new \stdClass()));
     }
 
-    public function testThrowIfNotSupportedRequestGivenAsArgumentForExecute()
+    /**
+     * @test
+     */
+    public function throwIfNotSupportedRequestGivenAsArgumentForExecute()
     {
-        $this->expectException(RequestNotSupportedException::class);
+        $this->expectException(\Payum\Core\Exception\RequestNotSupportedException::class);
         $action = new RecurringPaymentDetailsSyncAction();
 
-        $action->execute(new stdClass());
+        $action->execute(new \stdClass());
     }
 
-    public function testShouldDoNothingIfProfileIdNotSet()
+    /**
+     * @test
+     */
+    public function shouldDoNothingIfProfileIdNotSet()
     {
         $gatewayMock = $this->createGatewayMock();
         $gatewayMock
@@ -61,36 +68,39 @@ class RecurringPaymentDetailsSyncActionTest extends TestCase
         $action = new RecurringPaymentDetailsSyncAction();
         $action->setGateway($gatewayMock);
 
-        $request = new Sync([
+        $request = new Sync(array(
             'BILLINGPERIOD' => 12,
-        ]);
+        ));
 
         $action->execute($request);
     }
 
-    public function testShouldRequestGetRecurringPaymentsProfileDetailsActionIfProfileIdSetInModel()
+    /**
+     * @test
+     */
+    public function shouldRequestGetRecurringPaymentsProfileDetailsActionIfProfileIdSetInModel()
     {
         $gatewayMock = $this->createGatewayMock();
         $gatewayMock
             ->expects($this->once())
             ->method('execute')
-            ->with($this->isInstanceOf(GetRecurringPaymentsProfileDetails::class))
+            ->with($this->isInstanceOf('Workup\Payum\Paypal\ExpressCheckout\Nvp\Request\Api\GetRecurringPaymentsProfileDetails'))
         ;
 
         $action = new RecurringPaymentDetailsSyncAction();
         $action->setGateway($gatewayMock);
 
-        $action->execute(new Sync([
+        $action->execute(new Sync(array(
             'BILLINGPERIOD' => 'aBillingPeriod',
             'PROFILEID' => 'anId',
-        ]));
+        )));
     }
 
     /**
-     * @return MockObject|GatewayInterface
+     * @return \PHPUnit_Framework_MockObject_MockObject|\Payum\Core\GatewayInterface
      */
     protected function createGatewayMock()
     {
-        return $this->createMock(GatewayInterface::class);
+        return $this->createMock('Payum\Core\GatewayInterface');
     }
 }
